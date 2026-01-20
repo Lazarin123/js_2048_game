@@ -1,46 +1,50 @@
-// main.js
 import { Game } from './modules/Game.class.js';
 
 const game = new Game();
-const gameBoard = document.getElementById('game-board');
+const boardElement = document.getElementById('game-board');
+const scoreElement = document.getElementById('score');
 
-function updateUI() {
-    gameBoard.innerHTML = ''; // Limpa o board
+/**
+ * Atualiza a interface do usuário com base no estado atual do jogo
+ */
+function render() {
+    boardElement.innerHTML = '';
     
-    game.grid.forEach(row => {
-        row.forEach(value => {
+    game.grid.forEach((row) => {
+        row.forEach((value) => {
             const cell = document.createElement('div');
             
-            // CORREÇÃO: Adicionando a classe em vez de substituir
+            // CORREÇÃO: Adiciona a classe base e mantém a específica separada
             cell.classList.add('field-cell'); 
             if (value > 0) {
                 cell.classList.add(`field-cell--${value}`);
                 cell.textContent = value;
             }
             
-            gameBoard.appendChild(cell);
+            boardElement.appendChild(cell);
         });
     });
     
-    document.getElementById('score').textContent = game.score;
+    if (scoreElement) {
+        scoreElement.textContent = game.score;
+    }
 }
 
-// CORREÇÃO: Usando event.key em vez de keyCode
-window.addEventListener('keydown', (event) => {
-    let moved = false;
+/**
+ * Escuta eventos de teclado usando e.key para evitar depreciação
+ * e evita erro de 'event' is already a global variable
+ */
+window.addEventListener('keydown', (e) => {
+    const validKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
     
-    switch (event.key) {
-        case 'ArrowUp':    moved = game.move('up'); break;
-        case 'ArrowDown':  moved = game.move('down'); break;
-        case 'ArrowLeft':  moved = game.move('left'); break;
-        case 'ArrowRight': moved = game.move('right'); break;
-    }
-
-    if (moved) {
-        game.addRandomTile();
-        updateUI();
+    if (validKeys.includes(e.key)) {
+        // Se o movimento resultou em mudança, adiciona um novo tile e re-renderiza
+        if (game.move(e.key)) {
+            game.addRandomTile();
+            render();
+        }
     }
 });
 
-// Inicializa a interface
-updateUI();
+// Renderização inicial
+render();
